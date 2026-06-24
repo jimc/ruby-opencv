@@ -44,14 +44,14 @@ rb_allocate(VALUE klass)
  * Constructor
  *
  * @overload new(seq_flags = CV_SEQ_ELTYPE_POINT | CV_SEQ_KIND_GENERIC, storage = nil)
- *   @param [Fixnum] seq_flags Flags of the created sequence, which are combinations of
+ *   @param [Integer] seq_flags Flags of the created sequence, which are combinations of
  *     the element types and sequence types.
  *     - Element type:
  *       - <tt>CV_SEQ_ELTYPE_POINT</tt>: {CvPoint}
  *       - <tt>CV_32FC2</tt>: {CvPoint2D32f}
  *       - <tt>CV_SEQ_ELTYPE_POINT3D</tt>: {CvPoint3D32f}
- *       - <tt>CV_SEQ_ELTYPE_INDEX</tt>: Fixnum
- *       - <tt>CV_SEQ_ELTYPE_CODE</tt>: Fixnum (Freeman code)
+ *       - <tt>CV_SEQ_ELTYPE_INDEX</tt>: Integer
+ *       - <tt>CV_SEQ_ELTYPE_CODE</tt>: Integer (Freeman code)
  *     - Sequence type:
  *       - <tt>CV_SEQ_KIND_GENERIC</tt>: Generic sequence
  *       - <tt>CV_SEQ_KIND_CURVE</tt>: Curve
@@ -292,6 +292,39 @@ rb_point_polygon_test(VALUE self, VALUE point, VALUE measure_dist)
   return rb_float_new(dist);
 }
 
+/*
+ * call-seq:
+ *   match_shapes(object, method) -> float
+ *
+ * Compares two shapes(self and object). <i>object</i> should be CvContour.
+ *
+ * A - object1, B - object2:
+ * * method=CV_CONTOURS_MATCH_I1
+ *     I1(A,B)=sumi=1..7abs(1/mAi - 1/mBi)
+ * * method=CV_CONTOURS_MATCH_I2
+ *     I2(A,B)=sumi=1..7abs(mAi - mBi)
+ * * method=CV_CONTOURS_MATCH_I3
+ *     I3(A,B)=sumi=1..7abs(mAi - mBi)/abs(mAi)
+ */
+VALUE
+rb_match_shapes(int argc, VALUE *argv, VALUE self)
+{
+  VALUE object, method, param;
+  rb_scan_args(argc, argv, "21", &object, &method, &param);
+  int method_flag = CVMETHOD("COMPARISON_METHOD", method);
+  if (!rb_obj_is_kind_of(object, cCvContour::rb_class()))
+    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s",
+        rb_class2name(cCvContour::rb_class()));
+  double result = 0;
+  try {
+    result = cvMatchShapes(CVARR(self), CVARR(object), method_flag);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(result);
+}
+
 VALUE new_object()
 {  
   VALUE object = rb_allocate(rb_klass);
@@ -343,6 +376,7 @@ init_ruby_class()
   rb_define_method(rb_klass, "in?", RUBY_METHOD_FUNC(rb_in_q), 1);
   rb_define_method(rb_klass, "measure_distance", RUBY_METHOD_FUNC(rb_measure_distance), 1);
   rb_define_method(rb_klass, "point_polygon_test", RUBY_METHOD_FUNC(rb_point_polygon_test), 2);
+  rb_define_method(rb_klass, "match_shapes", RUBY_METHOD_FUNC(rb_match_shapes), -1);
 }
 
 __NAMESPACE_END_CVCONTOUR

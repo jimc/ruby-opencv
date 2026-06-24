@@ -3087,14 +3087,14 @@ rb_fill_poly_bang(int argc, VALUE *argv, VALUE self)
   Check_Type(polygons, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_polygons = RARRAY_LEN(polygons);
-  num_points = ALLOCA_N(int, num_polygons);
+  num_points = RB_ALLOC_N(int, num_polygons);
 
-  p = ALLOCA_N(CvPoint*, num_polygons);
+  p = RB_ALLOC_N(CvPoint*, num_polygons);
   for (j = 0; j < num_polygons; ++j) {
     points = rb_ary_entry(polygons, j);
     Check_Type(points, T_ARRAY);
     num_points[j] = RARRAY_LEN(points);
-    p[j] = ALLOCA_N(CvPoint, num_points[j]);
+    p[j] = RB_ALLOC_N(CvPoint, num_points[j]);
     for (i = 0; i < num_points[j]; ++i) {
       p[j][i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
     }
@@ -3160,7 +3160,7 @@ rb_fill_convex_poly_bang(int argc, VALUE *argv, VALUE self)
   Check_Type(points, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_points = RARRAY_LEN(points);
-  p = ALLOCA_N(CvPoint, num_points);
+  p = RB_ALLOC_N(CvPoint, num_points);
   for (i = 0; i < num_points; ++i)
     p[i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
 
@@ -3236,14 +3236,14 @@ rb_poly_line_bang(int argc, VALUE *argv, VALUE self)
   Check_Type(polygons, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_polygons = RARRAY_LEN(polygons);
-  num_points = ALLOCA_N(int, num_polygons);
-  p = ALLOCA_N(CvPoint*, num_polygons);
+  num_points = RB_ALLOC_N(int, num_polygons);
+  p = RB_ALLOC_N(CvPoint*, num_polygons);
 
   for (j = 0; j < num_polygons; ++j) {
     points = rb_ary_entry(polygons, j);
     Check_Type(points, T_ARRAY);
     num_points[j] = RARRAY_LEN(points);
-    p[j] = ALLOCA_N(CvPoint, num_points[j]);
+    p[j] = RB_ALLOC_N(CvPoint, num_points[j]);
     for (i = 0; i < num_points[j]; ++i) {
       p[j][i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
     }
@@ -3562,7 +3562,7 @@ rb_find_chessboard_corners(int argc, VALUE *argv, VALUE self)
 
   int flag = NIL_P(flag_val) ? CV_CALIB_CB_ADAPTIVE_THRESH : NUM2INT(flag_val);
   CvSize pattern_size = VALUE_TO_CVSIZE(pattern_size_val);
-  CvPoint2D32f* corners = ALLOCA_N(CvPoint2D32f, pattern_size.width * pattern_size.height);
+  CvPoint2D32f* corners = RB_ALLOC_N(CvPoint2D32f, pattern_size.width * pattern_size.height);
   int num_found_corners = 0;
   int pattern_was_found = 0;
   try {
@@ -3598,7 +3598,7 @@ rb_find_corner_sub_pix(VALUE self, VALUE corners, VALUE win_size, VALUE zero_zon
 {
   Check_Type(corners, T_ARRAY);
   int count = RARRAY_LEN(corners);
-  CvPoint2D32f* corners_buff = ALLOCA_N(CvPoint2D32f, count);
+  CvPoint2D32f* corners_buff = RB_ALLOC_N(CvPoint2D32f, count);
   VALUE* corners_ptr = RARRAY_PTR(corners);
 
   for (int i = 0; i < count; i++) {
@@ -3907,8 +3907,8 @@ rb_get_perspective_transform(VALUE self, VALUE source, VALUE dest)
 
   int count = RARRAY_LEN(source);
 
-  CvPoint2D32f* source_buff = ALLOCA_N(CvPoint2D32f, count);
-  CvPoint2D32f* dest_buff = ALLOCA_N(CvPoint2D32f, count);
+  CvPoint2D32f* source_buff = RB_ALLOC_N(CvPoint2D32f, count);
+  CvPoint2D32f* dest_buff = RB_ALLOC_N(CvPoint2D32f, count);
 
   for (int i = 0; i < count; i++) {
     source_buff[i] = *(CVPOINT2D32F(RARRAY_PTR(source)[i]));
@@ -4740,18 +4740,18 @@ rb_flood_fill_bang(int argc, VALUE *argv, VALUE self)
  *
  * @overload find_contours(find_contours_options)
  *   @param find_contours_options [Hash] Options
- *   @option find_contours_options [Symbol] :mode (:list) Retrieval mode.
- *      * :external - retrive only the extreme outer contours
- *      * :list - retrieve all the contours and puts them in the list.
- *      * :ccomp - retrieve all the contours and organizes them into two-level hierarchy:
+ *   @option find_contours_options [Integer] :mode (CV_RETR_LIST) Retrieval mode.
+ *      * CV_RETR_EXTERNAL - retrive only the extreme outer contours
+ *      * CV_RETR_LIST - retrieve all the contours and puts them in the list.
+ *      * CV_RETR_CCOMP - retrieve all the contours and organizes them into two-level hierarchy:
  *        top level are external boundaries of the components, second level are bounda boundaries of the holes
- *      * :tree - retrieve all the contours and reconstructs the full hierarchy of nested contours
+ *      * CV_RETR_TREE - retrieve all the contours and reconstructs the full hierarchy of nested contours
  *        Connectivity determines which neighbors of a pixel are considered.
- *   @option find_contours_options [Symbol] :method (:approx_simple) Approximation method.
- *      * :code - output contours in the Freeman chain code. All other methods output polygons (sequences of vertices).
- *      * :approx_none - translate all the points from the chain code into points;
- *      * :approx_simple - compress horizontal, vertical, and diagonal segments, that is, the function leaves only their ending points;
- *      * :approx_tc89_l1, :approx_tc89_kcos - apply one of the flavors of Teh-Chin chain approximation algorithm.
+ *   @option find_contours_options [Integer] :method (CV_CHAIN_APPROX_SIMPLE) Approximation method.
+ *      * CV_CHAIN_CODE - output contours in the Freeman chain code. All other methods output polygons (sequences of vertices).
+ *      * CV_CHAIN_APPROX_NONE - translate all the points from the chain code into points;
+ *      * CV_CHAIN_APPROX_SIMPLE - compress horizontal, vertical, and diagonal segments, that is, the function leaves only their ending points;
+ *      * CV_CHAIN_APPROX_TC89_L1, CV_CHAIN_APPROX_TC89_KCOS - apply one of the flavors of Teh-Chin chain approximation algorithm.
  *   @option find_contours_options [CvPoint] :offset (CvPoint.new(0, 0)) Offset, by which every contour point is shifted.
  * @return [CvContour, CvChain] Detected contours. If <tt>:method</tt> is <tt>:code</tt>,
  *   returns as <tt>CvChain</tt>, otherwise <tt>CvContour</tt>.
@@ -4883,7 +4883,7 @@ rb_draw_chessboard_corners_bang(VALUE self, VALUE pattern_size, VALUE corners, V
 {
   Check_Type(corners, T_ARRAY);
   int count = RARRAY_LEN(corners);
-  CvPoint2D32f* corners_buff = ALLOCA_N(CvPoint2D32f, count);
+  CvPoint2D32f* corners_buff = RB_ALLOC_N(CvPoint2D32f, count);
   VALUE* corners_ptr = RARRAY_PTR(corners);
   for (int i = 0; i < count; i++) {
     corners_buff[i] = *(CVPOINT2D32F(corners_ptr[i]));
@@ -5367,9 +5367,9 @@ rb_snake_image(int argc, VALUE *argv, VALUE self)
 	(RARRAY_LEN(beta) != length) ||
 	(RARRAY_LEN(gamma) != length))
       rb_raise(rb_eArgError, "alpha, beta, gamma should be same size of points");
-    a = ALLOCA_N(float, length);
-    b = ALLOCA_N(float, length);
-    c = ALLOCA_N(float, length);
+    a = RB_ALLOC_N(float, length);
+    b = RB_ALLOC_N(float, length);
+    c = RB_ALLOC_N(float, length);
     for (i = 0; i < length; ++i) {
       a[i] = (float)NUM2DBL(RARRAY_PTR(alpha)[i]);
       b[i] = (float)NUM2DBL(RARRAY_PTR(beta)[i]);

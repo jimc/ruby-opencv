@@ -1,9 +1,12 @@
+![Build Status with Travis CI](https://travis-ci.org/ruby-opencv/ruby-opencv.svg?branch=master)
+
 # ruby-opencv
 
 An OpenCV wrapper for Ruby.
 
 * Web site: <https://github.com/ruby-opencv/ruby-opencv>
-* Ruby 1.9.3, 2.x and OpenCV 2.4.10 are supported.
+* Ruby 2.x and OpenCV 2.4.13 are supported.
+* [Documentation](http://www.rubydoc.info/gems/ruby-opencv/frames)
 
 ## Requirement
 
@@ -23,16 +26,9 @@ $ gem install ruby-opencv -- --with-opencv-dir=/path/to/opencvdir
 Note: **/path/to/opencvdir** is the directory where you installed OpenCV.
 
 
-### Windows
-You can use pre-build binary for Windows (mswin32).
+### Windows (RubyInstaller)
 
-1. Install [OpenCV](http://sourceforge.net/projects/opencvlibrary/files/opencv-win/)
-2. Set path to OpenCV libraries. When you installed OpenCV to **C:\opencv**, add **C:\opencv\build\x86\vc10\bin** to the systems path.
-3. Install ruby-opencv
-
-```
-$ gem install ruby-opencv
-```
+See [install-ruby-opencv-with-rubyinstaller-on-windows.md](install-ruby-opencv-with-rubyinstaller-on-windows.md).
 
 ## Sample code
 ### Load and Display an Image
